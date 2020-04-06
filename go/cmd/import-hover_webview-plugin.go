@@ -4,10 +4,26 @@ package main
 
 import (
 	hwebview "github.com/Winwisly100/hwebview/go"
+	"github.com/asticode/go-astikit"
+	"github.com/asticode/go-astilectron"
 	flutter "github.com/go-flutter-desktop/go-flutter"
 )
 
 func init() {
 	// Only the init function can be tweaked by plugin maker.
-	options = append(options, flutter.AddPlugin(&hwebview.HwebviewPlugin{}))
+	options = append(options, flutter.AddPlugin(&hwebview.HwebviewPlugin{
+		Options: astilectron.Options{
+			AppName:           "ION",
+			BaseDirectoryPath: "webview",
+		},
+		WindowsOptions: &astilectron.WindowOptions{
+			Center: astikit.BoolPtr(true),
+			Height: astikit.IntPtr(700),
+			Width:  astikit.IntPtr(700),
+			WebPreferences: &astilectron.WebPreferences{
+				Webaudio: astikit.BoolPtr(true),
+				Webgl:    astikit.BoolPtr(true),
+			},
+		},
+	}))
 }
