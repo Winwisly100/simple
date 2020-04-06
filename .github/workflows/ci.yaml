@@ -1,0 +1,177 @@
+# This workflow will build, package and Sign windows, MacOs, Linux App and Deploy it.
+# 
+# 1. Set up secrets in your workspace:
+#   * LINUX_PUBLIC_SIGN_KEY the public key of your secret gpg signing key.
+#   * LINUX_PRIVATE_SIGN_KEY_BASE_64 the private key of your secret gpg signing key.
+#   * LINUX_SIGN_KEY_ID used to find the key.
+# To configure this workflow:
+name: Desktop - Build, Package, Sign and Deploy Windows, Linux and MacOs Apps
+on:
+  push:
+    branches: 
+      - master
+
+jobs:
+  build-package-sign-linux:
+    name: "Linux Build, Package, Sign and Deploy"
+    runs-on: [ubuntu-latest]
+    env:
+      GOROOT: /usr/local/go
+      GO111MODULE: auto
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14.1
+
+      - name: Install Hover
+        run: |
+          sudo apt-get install libgl1-mesa-dev xorg-dev
+          sudo apt-get install gcc libc6-dev
+          export GOPATH=$HOME/go
+          export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+          go version
+          go get -u github.com/go-flutter-desktop/hover
+
+      - name: Cloning repository
+        uses: actions/checkout@v2.0.0
+
+      - uses: subosito/flutter-action@v1.2.0
+        with:
+          channel: beta
+
+      - name: Setting Up Flutter SDK
+        run: flutter pub get
+        
+      - name: Build Linux Application
+        run: |
+          export GOPATH=$HOME/go
+          export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+          hover build linux
+
+      - name: Packaging Linux App
+        run: |
+          export GOPATH=$HOME/go
+          export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+          hover init-packaging linux-appimage
+          hover init-packaging linux-deb
+          hover init-packaging linux-snap
+          hover build linux-deb
+          hover build linux-appimage
+          hover build linux-snap
+      - name: list
+        run: |
+          ls go/build/outputs
+          ls go/build/packaging
+          ls go/build/packaging/linux-deb
+          ls go/build/packaging/linux-snap
+          ls go/build/packaging/linux-appimage
+      # - name: Sign Linux App
+      #   env: 
+      #     SIGN_KEY_BASE_64: ${{ secrets.LINUX_PRIVATE_SIGN_KEY_BASE_64 }}
+      #     SIGN_KEY_ID: ${{ secrets.LINUX_SIGN_KEY_ID }}
+      #     SIGN_KEY_PASSWORD: ${{ secrets.LINUX_SIGN_PASSWORD }}
+      #   run: |
+      #     echo $SIGN_KEY_BASE_64 | base64 -d | tee private_sign_key.asc
+      #     export GPG_TTY=$(tty)
+      #     echo "no-tty" >> ~/.gnupg/gpg.conf
+      #     gpg --list-keys
+      #     echo $SIGN_KEY_PASSWORD | gpg --batch --allow-secret-key-import --import private_sign_key.asc
+      #     gpg --list-keys
+      #     sudo apt-get update
+      #     sudo apt-get install debsigs
+      #     debFile=$(ls go/build/outputs/linux-deb/*.deb)
+      #     debsigs --sign=origin -k $SIGN_KEY_ID ${debFile}
+      #   working-directory: maintemplate/client/
+
+      # TODO fixe publish artifact Linux
+      # - name: "publish action-artifact zip"
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: linux
+      #     path: ./bs_linux
+
+  # build-package-sign-windows:
+  #   name: "Windows Build, Package, Sign and Deploy"
+  #   runs-on: [windows-latest]
+  #   env:
+  #     GO111MODULE: auto
+  #   steps:
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v1
+  #       with:
+  #         go-version: 1.14.1
+  #     - name: Install Hover
+  #       run: |
+  #         go version
+  #         go get -u github.com/go-flutter-desktop/hover
+
+  #     - name: Cloning repository
+  #       uses: actions/checkout@v2.0.0
+
+  #     - uses: subosito/flutter-action@v1.2.0
+  #       with:
+  #         channel: beta
+  #     - name: Setting Up Flutter SDK
+  #       run: flutter pub get
+
+  #     - name: Build Linux Application
+  #       run: hover build windows
+
+  #     - name: Packaging Windows App
+  #       run: |
+  #         hover init-packaging windows-msi
+  #         hover build windows-msi
+
+  #     # - name: Sign Linux App
+  #     #   run: echo "TODO Add signing for Windows using Sign Tool"
+  #     #   working-directory: maintemplate/client/
+
+  #     # TODO fixe publish artifact Linux
+  #     # - name: "publish action-artifact zip"
+  #     #   uses: actions/upload-artifact@v1
+  #     #   with:
+  #     #     name: linux
+  #     #     path: ./bs_linux
+
+  # build-package-sign-mac:
+  #   name: "MAC Build, Package, Sign and Deploy"
+  #   runs-on: [macos-latest]
+  #   env:
+  #     GO111MODULE: off
+  #   steps:
+  #     - name: Set up go
+  #       uses: actions/setup-go@v1
+  #       with:
+  #         go-version: 1.14
+  #         id: go
+  #     - name: Install Hover
+  #       run: |
+  #         go version
+  #         GO111MODULE=off go get -u github.com/go-flutter-desktop/hover
+  #     - name: Cloning repository
+  #       uses: actions/checkout@v2.0.0
+  #     - uses: subosito/flutter-action@v1.2.0
+  #       with:
+  #         channel: beta
+  #     - name: Setting Up Flutter SDK
+  #       run: flutter pub get
+
+  #     - name: Build Mac Application
+  #       run: hover build darwin --version-number 1.1
+
+  #     - name: Packaging Mac App
+  #       run: |
+  #         hover init-packaging darwin-pkg
+  #         hover build darwin-pkg --version-number 1.1
+
+  #     # - name: Sign Mac App
+  #     #   run: echo "TODO Add signing for Mac using Sign Tool"
+  #     #   working-directory: maintemplate/client/
+
+  #     # TODO fixe publish artifact Linux
+  #     # - name: "publish action-artifact zip"
+  #     #   uses: actions/upload-artifact@v1
+  #     #   with:
+  #     #     name: linux
+  #     #     path: ./bs_linux
