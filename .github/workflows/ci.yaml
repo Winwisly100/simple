@@ -254,10 +254,10 @@ jobs:
       - name: zip
         run: |
           zip win-msi windows-msi/*.msi
-          # zip linux-deb linux-deb/*.deb
-          # zip linux-appimage linux-appimage/*.AppImage
-          # zip linux-snap linux-snap/*.snap
-          # zip mac-darwin-pkg darwin-pkg/*.pkg
+          zip linux-deb linux-deb/*.deb
+          zip linux-appimage linux-appimage/*.AppImage
+          zip linux-snap linux-snap/*.snap
+          zip mac-darwin-pkg darwin-pkg/*.pkg
       
       - name: Create Release
         id: create_release
