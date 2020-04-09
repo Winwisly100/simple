@@ -94,17 +94,18 @@ jobs:
         run: |
           export GOPATH=$HOME/go
           export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-          hover init-packaging windows-msi
-          hover init-packaging linux-appimage
           hover init-packaging linux-deb
-          hover init-packaging linux-snap
-          hover init-packaging darwin-pkg
-
+          ./update.sh
           hover build linux-deb --version-number ${version}
-          hover build linux-appimage --version-number ${version}
-          hover build linux-snap --version-number ${version}
-          hover build windows-msi --version-number ${version}
-          hover build darwin-pkg --version-number ${version}
+#          hover init-packaging windows-msi
+#          hover init-packaging linux-appimage
+#          hover init-packaging linux-snap
+#          hover init-packaging darwin-pkg
+
+#          hover build linux-appimage --version-number ${version}
+#          hover build linux-snap --version-number ${version}
+#          hover build windows-msi --version-number ${version}
+#          hover build darwin-pkg --version-number ${version}
 
       - name: "publish action-artifact zip linux-deb"
         uses: actions/upload-artifact@v1
@@ -112,29 +113,29 @@ jobs:
           name: linux-deb
           path: go/build/outputs/linux-deb/
       
-      - name: "publish action-artifact zip linux-snap"
-        uses: actions/upload-artifact@v1
-        with:
-          name: linux-snap
-          path: go/build/outputs/linux-snap/
+      # - name: "publish action-artifact zip linux-snap"
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: linux-snap
+      #     path: go/build/outputs/linux-snap/
 
-      - name: "publish action-artifact zip linux-appimage"
-        uses: actions/upload-artifact@v1
-        with:
-          name: linux-appimage
-          path: go/build/outputs/linux-appimage/
+      # - name: "publish action-artifact zip linux-appimage"
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: linux-appimage
+      #     path: go/build/outputs/linux-appimage/
       
-      - name: "publish action-artifact zip windows-msi"
-        uses: actions/upload-artifact@v1
-        with:
-          name: windows-msi
-          path: go/build/outputs/windows-msi/
+      # - name: "publish action-artifact zip windows-msi"
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: windows-msi
+      #     path: go/build/outputs/windows-msi/
 
-      - name: "publish action-artifact zip darwin-pkg"
-        uses: actions/upload-artifact@v1
-        with:
-          name: darwin-pkg
-          path: go/build/outputs/darwin-pkg/
+      # - name: "publish action-artifact zip darwin-pkg"
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: darwin-pkg
+      #     path: go/build/outputs/darwin-pkg/
 
   # sign-linux:
   #   name: "linux Sign"
@@ -217,110 +218,110 @@ jobs:
   #         name: darwin-pkg
   #         path: maintemplate/client/go/build/outputs/darwin-pkg/
   
-  release:
-    # needs: [sign-darwin, sign-windows, sign-linux]
-    needs: [build-packages]
-    name: Release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+  # release:
+  #   # needs: [sign-darwin, sign-windows, sign-linux]
+  #   needs: [build-packages]
+  #   name: Release
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check out code into the Go module directory
+  #       uses: actions/checkout@v2
 
-      - name: Download artefacts linux-deb
-        uses: actions/download-artifact@v1
-        with:
-          name: linux-deb
+  #     - name: Download artefacts linux-deb
+  #       uses: actions/download-artifact@v1
+  #       with:
+  #         name: linux-deb
 
-      - name: Download artefacts linux-appimage
-        uses: actions/download-artifact@v1
-        with:
-          name: linux-appimage
+  #     - name: Download artefacts linux-appimage
+  #       uses: actions/download-artifact@v1
+  #       with:
+  #         name: linux-appimage
 
-      - name: Download artefacts linux-snap
-        uses: actions/download-artifact@v1
-        with:
-          name: linux-snap
+  #     - name: Download artefacts linux-snap
+  #       uses: actions/download-artifact@v1
+  #       with:
+  #         name: linux-snap
           
-      - name: Download artefacts darwin-pkg
-        uses: actions/download-artifact@v1
-        with:
-          name: darwin-pkg
+  #     - name: Download artefacts darwin-pkg
+  #       uses: actions/download-artifact@v1
+  #       with:
+  #         name: darwin-pkg
 
-      - name: Download artefacts windows-msi
-        uses: actions/download-artifact@v1
-        with:
-          name: windows-msi
+  #     - name: Download artefacts windows-msi
+  #       uses: actions/download-artifact@v1
+  #       with:
+  #         name: windows-msi
           
-      - name: zip
-        run: |
-          zip win-msi windows-msi/*.msi
-          # zip linux-deb linux-deb/*.deb
-          # zip linux-appimage linux-appimage/*.AppImage
-          # zip linux-snap linux-snap/*.snap
-          # zip mac-darwin-pkg darwin-pkg/*.pkg
+  #     - name: zip
+  #       run: |
+  #         zip win-msi windows-msi/*.msi
+  #         # zip linux-deb linux-deb/*.deb
+  #         # zip linux-appimage linux-appimage/*.AppImage
+  #         # zip linux-snap linux-snap/*.snap
+  #         # zip mac-darwin-pkg darwin-pkg/*.pkg
       
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: 1.0.0
-          release_name: Release 1.0.0
-          draft: false
-          prerelease: false
+  #     - name: Create Release
+  #       id: create_release
+  #       uses: actions/create-release@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         tag_name: 1.0.0
+  #         release_name: Release 1.0.0
+  #         draft: false
+  #         prerelease: false
 
-      - name: Upload Release Asset
-        id: upload-release-asset-linux-deb
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./linux-deb.zip
-          asset_name: linux-deb.zip
-          asset_content_type: application/zip
+  #     - name: Upload Release Asset
+  #       id: upload-release-asset-linux-deb
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+  #         asset_path: ./linux-deb.zip
+  #         asset_name: linux-deb.zip
+  #         asset_content_type: application/zip
 
-      - name: Upload Release Asset
-        id: upload-release-asset-linux-snap
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./linux-snap.zip
-          asset_name: linux-snap.zip
-          asset_content_type: application/zip
+  #     - name: Upload Release Asset
+  #       id: upload-release-asset-linux-snap
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+  #         asset_path: ./linux-snap.zip
+  #         asset_name: linux-snap.zip
+  #         asset_content_type: application/zip
 
-      - name: Upload Release Asset
-        id: upload-release-asset-linux-appimage 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./linux-appimage.zip
-          asset_name: linux-appimage.zip
-          asset_content_type: application/zip
+  #     - name: Upload Release Asset
+  #       id: upload-release-asset-linux-appimage 
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+  #         asset_path: ./linux-appimage.zip
+  #         asset_name: linux-appimage.zip
+  #         asset_content_type: application/zip
 
-      - name: Upload Release Asset
-        id: upload-release-asset-darwin-pkg
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./mac-darwin-pkg.zip
-          asset_name: mac-darwin-pkg.zip
-          asset_content_type: application/zip
+  #     - name: Upload Release Asset
+  #       id: upload-release-asset-darwin-pkg
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+  #         asset_path: ./mac-darwin-pkg.zip
+  #         asset_name: mac-darwin-pkg.zip
+  #         asset_content_type: application/zip
 
-      - name: Upload Release Asset
-        id: upload-release-asset-windows-msi 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./win-msi.zip
-          asset_name: win-msi.zip
-          asset_content_type: application/zip
+  #     - name: Upload Release Asset
+  #       id: upload-release-asset-windows-msi 
+  #       uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+  #         asset_path: ./win-msi.zip
+  #         asset_name: win-msi.zip
+  #         asset_content_type: application/zip
