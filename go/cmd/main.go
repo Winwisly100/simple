@@ -16,6 +16,8 @@ import (
 var vmArguments string
 
 func main() {
+	fmt.Println(os.Args)
+	fmt.Println(vmArguments)
 	// DO NOT EDIT, add options in options.go
 	mainOptions := []flutter.Option{
 		flutter.OptionVMArguments(strings.Split(vmArguments, ";")),
